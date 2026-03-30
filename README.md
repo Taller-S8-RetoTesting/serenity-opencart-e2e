@@ -1,123 +1,81 @@
-﻿# Serenity OpenCart E2E — Guest Checkout Automation
+﻿# README - Automatización E2E con Serenity BDD
 
-Automatización E2E del flujo de compra como invitado en [OpenCart](http://opencart.abstracta.us/) usando **Serenity BDD**, **Cucumber** y el patrón **Screenplay**.
+## Objetivo
 
-## Requisitos previos
+Este proyecto automatiza el flujo de compra como invitado sobre OpenCart en `http://opencart.abstracta.us/`, usando Serenity BDD, Cucumber y el patrón Screenplay.
 
-| Herramienta | Versión mínima |
-|---|---|
-| Java (JDK) | 17 |
-| Gradle | 9.0 (incluido via wrapper) |
-| Google Chrome | última estable |
+El escenario implementado valida:
 
-## Flujo automatizado
+- Agregar `MacBook` al carrito
+- Agregar `iPhone` al carrito
+- Visualizar el carrito de compras
+- Iniciar checkout como invitado
+- Completar datos de facturación
+- Seleccionar método de envío
+- Seleccionar método de pago
+- Confirmar la orden
+- Verificar el mensaje final `Your order has been placed!`
 
-El escenario E2E cubre:
+## Tecnologías utilizadas
 
-1. Navegar a la tienda OpenCart
-2. Agregar **MacBook** al carrito
-3. Agregar **iPhone** al carrito
-4. Visualizar el carrito de compras
-5. Iniciar checkout como **Guest (invitado)**
-6. Completar datos de facturación
-7. Seleccionar método de envío
-8. Seleccionar método de pago (aceptando términos)
-9. Confirmar la orden
-10. Validar el mensaje final: **"Your order has been placed!"**
+- Java 17
+- Gradle Wrapper
+- Serenity BDD 5.3.3
+- Cucumber 7.34.2
+- JUnit Platform
+- Screenplay Pattern
 
-## Ejecución
+## Prerrequisitos
 
-### Ejecutar todas las pruebas y generar reporte
+1. Tener Java 17 instalado y disponible en `PATH`.
+2. Tener Google Chrome instalado.
+3. Tener acceso a internet, ya que la suite consume un sitio público.
+4. Ejecutar los comandos desde la raíz del proyecto.
+
+## Estructura relevante
+
+- `src/test/resources/features/guest_checkout.feature` — feature del flujo E2E completo
+- `src/test/java/org/alexrieger/runners/OpenCartE2ERunner.java` — runner JUnit Platform con integración Serenity + Cucumber
+- `src/test/java/org/alexrieger/stepdefinitions/GuestCheckoutStepDefinition.java` — orquestación de pasos Gherkin
+- `src/test/java/org/alexrieger/tasks/` — tareas Screenplay del flujo de compra
+- `src/test/java/org/alexrieger/questions/OrderSuccessMessage.java` — validación del mensaje final
+- `src/test/java/org/alexrieger/ui/` — locators y targets de la UI
+- `src/test/java/org/alexrieger/util/TestData.java` — datos de prueba centralizados
+- `src/test/resources/serenity.conf` — configuración del navegador y evidencias
+
+## Pasos de ejecución
+
+### Windows
+
+1. Abrir una terminal en la raíz del proyecto.
+2. Ejecutar:
+
+```powershell
+.\gradlew.bat clean test aggregate
+```
+
+### Git Bash, Linux o macOS
+
+1. Abrir una terminal en la raíz del proyecto.
+2. Ejecutar:
 
 ```bash
 ./gradlew clean test aggregate
 ```
 
-En Windows:
+## Resultado esperado
 
-```bash
-gradlew.bat clean test aggregate
-```
+La ejecución debe finalizar sin errores y generar los reportes en las carpetas `target/` y `build/`.
 
-### Ejecutar solo el runner específico
+Ubicaciones útiles:
 
-```bash
-./gradlew test --tests "org.alexrieger.runners.OpenCartE2ERunner"
-```
+- `target/site/serenity/index.html`
+- `target/site/serenity/serenity-summary.html`
+- `build/reports/tests/test/index.html`
 
-## Reportes
+## Consideraciones del ejercicio
 
-Después de la ejecución, el reporte de Serenity se genera en:
-
-```
-target/site/serenity/index.html
-```
-
-Abrir este archivo en un navegador para ver el reporte detallado con capturas de pantalla.
-
-## Estructura del proyecto
-
-```
-src/test/
-├── java/org/alexrieger/
-│   ├── hooks/
-│   │   └── OpenBrowser.java              # Task para abrir el navegador
-│   ├── questions/
-│   │   └── OrderSuccessMessage.java      # Pregunta: texto de confirmación
-│   ├── runners/
-│   │   └── OpenCartE2ERunner.java        # Runner JUnit 5 + Cucumber
-│   ├── stepdefinitions/
-│   │   ├── GuestCheckoutStepDefinition.java  # Step definitions del flujo
-│   │   └── hooks/
-│   │       └── Hook.java                 # Hook @Before: inicializa OnStage
-│   ├── tasks/
-│   │   ├── AddFeaturedProductToCart.java  # Agregar producto al carrito
-│   │   ├── ViewShoppingCart.java         # Ver carrito desde header
-│   │   ├── BeginGuestCheckout.java       # Iniciar checkout como invitado
-│   │   ├── CompleteGuestBillingDetails.java # Llenar formulario de facturación
-│   │   ├── SelectDeliveryMethod.java     # Seleccionar método de envío
-│   │   ├── SelectPaymentMethod.java      # Aceptar términos y pagar
-│   │   └── ConfirmOrder.java            # Confirmar orden final
-│   ├── ui/
-│   │   ├── HomePageUI.java              # Targets: productos, carrito
-│   │   ├── ShoppingCartPageUI.java      # Targets: página del carrito
-│   │   ├── CheckoutPageUI.java          # Targets: formulario checkout
-│   │   └── OrderSuccessPageUI.java      # Targets: página de éxito
-│   └── util/
-│       └── TestData.java                # Constantes y datos de prueba
-└── resources/
-    ├── features/
-    │   └── guest_checkout.feature       # Escenario Gherkin del flujo E2E
-    ├── logback-test.xml
-    └── serenity.conf
-```
-
-## Patrón Screenplay
-
-La solución sigue estrictamente el patrón **Screenplay**:
-
-| Capa | Responsabilidad |
-|---|---|
-| **Features** | Escenarios en Gherkin (lenguaje de negocio) |
-| **Step Definitions** | Orquestación delgada: conectan Gherkin con Tasks/Questions |
-| **Tasks** | Lógica de negocio: interacciones con la aplicación |
-| **Questions** | Verificaciones: consultan el estado de la aplicación |
-| **UI (Targets)** | Localizadores de elementos: separados de la lógica |
-| **Util** | Datos centralizados: constantes y helpers |
-
-## Dependencias principales
-
-| Dependencia | Versión |
-|---|---|
-| Serenity BDD | 5.3.3 |
-| Cucumber | 7.34.2 |
-| JUnit Platform | 1.11.4 |
-| Java | 17 |
-| Gradle | 9.0 |
-
-## Notas
-
-- El navegador Chrome se ejecuta en modo **incognito** (configurado en `serenity.conf`).
-- Las capturas de pantalla se toman en **cada acción** (`FOR_EACH_ACTION`).
-- El email del invitado se genera dinámicamente con timestamp para evitar duplicados.
-- Los datos de prueba están centralizados en `TestData.java`.
+- La automatización cubre el happy path del guest checkout solicitado en el taller.
+- El correo del invitado se genera dinámicamente para evitar colisiones por reutilización de datos.
+- El sitio bajo prueba es público y compartido; por eso pueden aparecer intermitencias por latencia, cambios menores del DOM o estado cambiante del ambiente.
+- Durante la implementación fue necesario ajustar sincronización y selectores para estabilizar interacciones transitorias del checkout y de los mensajes de confirmación.
